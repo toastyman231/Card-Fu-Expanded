@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
-public class GameSession : MonoBehaviour
+public class GameSession : NetworkBehaviour
 {
     //Class variables
     PlayerDeck playerDeck;
@@ -41,7 +42,7 @@ public class GameSession : MonoBehaviour
     int oppWaterWins = 0;
     int oppWoodWins = 0;
 
-
+    
     private void Start()
     {
         playerDeck = GameObject.FindGameObjectWithTag("PlayerDraw").GetComponent<PlayerDeck>();
@@ -55,7 +56,9 @@ public class GameSession : MonoBehaviour
         ShuffleDeck(ref opponentDeck);
 
         //2) Deal cards
-        StartCoroutine(StartDealing());
+        Debug.Log("Reached dealing");
+        StartDealingServerRpc();
+        //StartCoroutine(StartDealing());
     }
     private void Update()
     {
@@ -439,9 +442,18 @@ public class GameSession : MonoBehaviour
         opponentCard = null;
     }
 
+    [ServerRpc]
+    private void StartDealingServerRpc()
+    {
+        Debug.Log("Dealing!");
+        StartCoroutine(StartDealing());
+    }
+
     IEnumerator StartDealing()
     {
-        yield return new WaitForSeconds(2);
+        yield return new WaitUntil(() => NetworkManager.Singleton.ConnectedClients.Count == 2);
+        //yield return new WaitForSeconds(2);
+        Debug.Log("2 PLayers reached");
 
         for (int i = 0; i < 5; i++)
         {
