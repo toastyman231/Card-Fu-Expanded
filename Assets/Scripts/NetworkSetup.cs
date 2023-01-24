@@ -11,8 +11,11 @@ public class NetworkSetup : MonoBehaviour
     [SerializeField] private Button hostBtn;
     [SerializeField] private Button clientBtn;
 
+    private Options gameOptions;
+
     private void Awake()
     {
+        gameOptions = GameObject.FindGameObjectWithTag("Options").GetComponent<Options>();
         /*serverBtn.onClick.AddListener(() =>
         {
             NetworkManager.Singleton.StartServer();
@@ -21,10 +24,14 @@ public class NetworkSetup : MonoBehaviour
         {
             NetworkManager.Singleton.StartHost();
             //SceneManager.LoadScene("Game", LoadSceneMode.Single);
+            gameOptions.multiplayer = true;
             NetworkManager.Singleton.SceneManager.LoadScene("Game", LoadSceneMode.Single);
         });
         clientBtn.onClick.AddListener(() =>
         {
+            //if (NetworkManager.Singleton.ConnectedClientsIds.Count >= 1) return;
+            // TODO: Remember to limit players to 2
+            gameOptions.multiplayer = true;
             NetworkManager.Singleton.StartClient();
             //SceneManager.LoadScene("Game", LoadSceneMode.Single);
         });

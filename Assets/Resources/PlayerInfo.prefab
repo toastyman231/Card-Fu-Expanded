@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2069576008669315743}
   - component: {fileID: 2069576008669315740}
-  - component: {fileID: 2069576008669315742}
+  - component: {fileID: -1248209060591088098}
   m_Layer: 0
-  m_Name: Test
+  m_Name: PlayerInfo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -49,7 +49,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
---- !u!114 &2069576008669315742
+--- !u!114 &-1248209060591088098
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -58,7 +58,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 2069576008669315741}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4420ab154f7fa2b4f8dc0960463d1f26, type: 3}
+  m_Script: {fileID: 11500000, guid: 05ee01eb30399e64799837c1fa2bdd65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardPrefab: {fileID: 5809531268930059009, guid: 5c2c3cb78455ab8408d4eb402f23920a, type: 3}

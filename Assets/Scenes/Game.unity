@@ -3690,6 +3690,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1423891361}
   - component: {fileID: 1423891362}
+  - component: {fileID: 1423891363}
   m_Layer: 0
   m_Name: PlayerDrawSpawn
   m_TagString: PlayerDraw
@@ -3775,6 +3776,22 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+--- !u!114 &1423891363
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1423891360}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 443942797
+  AlwaysReplicateAsRoot: 0
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!1 &1424166145
 GameObject:
   m_ObjectHideFlags: 0
@@ -4611,7 +4628,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1823978367}
-  - component: {fileID: 1823978366}
+  - component: {fileID: 1823978370}
   - component: {fileID: 1823978368}
   - component: {fileID: 1823978369}
   m_Layer: 0
@@ -4621,19 +4638,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1823978366
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1823978365}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 398b735013825ca4b9100d6f1ac66019, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  selectedCard: {fileID: 0}
 --- !u!4 &1823978367
 Transform:
   m_ObjectHideFlags: 0
@@ -4761,6 +4765,18 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   DontDestroyWithOwner: 1
   AutoObjectParentSync: 1
+--- !u!114 &1823978370
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1823978365}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17032913b639fd949bee222611e25171, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1831408312
 GameObject:
   m_ObjectHideFlags: 0
@@ -4771,6 +4787,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1831408313}
   - component: {fileID: 1831408314}
+  - component: {fileID: 1831408315}
   m_Layer: 0
   m_Name: OpponentDrawSpawn
   m_TagString: OpponentDraw
@@ -4856,6 +4873,22 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+--- !u!114 &1831408315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1831408312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 3399213703
+  AlwaysReplicateAsRoot: 0
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!1 &1851389599
 GameObject:
   m_ObjectHideFlags: 0

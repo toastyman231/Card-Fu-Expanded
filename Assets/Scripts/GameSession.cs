@@ -56,9 +56,7 @@ public class GameSession : NetworkBehaviour
         ShuffleDeck(ref opponentDeck);
 
         //2) Deal cards
-        Debug.Log("Reached dealing");
-        StartDealingServerRpc();
-        //StartCoroutine(StartDealing());
+        StartDealing();
     }
     private void Update()
     {
@@ -442,19 +440,8 @@ public class GameSession : NetworkBehaviour
         opponentCard = null;
     }
 
-    [ServerRpc]
-    private void StartDealingServerRpc()
+    void StartDealing()
     {
-        Debug.Log("Dealing!");
-        StartCoroutine(StartDealing());
-    }
-
-    IEnumerator StartDealing()
-    {
-        yield return new WaitUntil(() => NetworkManager.Singleton.ConnectedClients.Count == 2);
-        //yield return new WaitForSeconds(2);
-        Debug.Log("2 PLayers reached");
-
         for (int i = 0; i < 5; i++)
         {
             StartCoroutine(DealPlayer(i + 1, i));

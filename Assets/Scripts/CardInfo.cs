@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class CardInfo : MonoBehaviour
 {
+    private uint _cardId;
+
     public int value;
     public Elements.Element type;
     public AudioClip death;
@@ -49,5 +51,15 @@ public class CardInfo : MonoBehaviour
     {
         source.clip = death;
         source.Play();
+    }
+
+    public uint GetCardId()
+    {
+        return _cardId;
+    }
+
+    public void SetCardId(uint newId)
+    {
+        _cardId = newId;
     }
 }

@@ -49,6 +49,7 @@ TagManager:
   - Credits
   - HS1
   - HS2
+  - Card
   layers:
   - Default
   - TransparentFX
