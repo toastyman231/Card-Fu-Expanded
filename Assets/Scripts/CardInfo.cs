@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
-public class CardInfo : MonoBehaviour
+public class CardInfo : NetworkBehaviour
 {
-    private uint _cardId;
+    public static CardInfo recentCard;
 
     public int value;
     public Elements.Element type;
@@ -21,13 +22,19 @@ public class CardInfo : MonoBehaviour
     public Sprite waterSymbol;
     public Sprite woodSymbol;
 
-    private void Start()
+    public override void OnNetworkSpawn()
     {
-        cardType.text = type.ToString();
-        cardValue.text = value.ToString();
-        source = GetComponent<AudioSource>();
+        recentCard = this;
+        SetupCard(value, type);
+        source = GetComponent<AudioSource>();        
+    }
 
-        switch (type)
+    public void SetupCard(int value, Elements.Element element)
+    {
+        cardType.text = element.ToString();
+        cardValue.text = value.ToString();
+
+        switch (element)
         {
             case Elements.Element.EARTH:
                 typeImage.sprite = earthSymbol;
@@ -51,15 +58,5 @@ public class CardInfo : MonoBehaviour
     {
         source.clip = death;
         source.Play();
-    }
-
-    public uint GetCardId()
-    {
-        return _cardId;
-    }
-
-    public void SetCardId(uint newId)
-    {
-        _cardId = newId;
     }
 }
