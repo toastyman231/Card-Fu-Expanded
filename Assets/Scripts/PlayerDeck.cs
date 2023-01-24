@@ -31,7 +31,7 @@ public class PlayerDeck : NetworkBehaviour
         }
     }
 
-    public void InitializeDeck()
+    public async void InitializeDeck()
     {
         Debug.Log("Initializing deck!");
         NetworkLog.LogInfoServer("Initializing deck");
@@ -43,48 +43,48 @@ public class PlayerDeck : NetworkBehaviour
             nextECard.GetComponent<NetworkObject>().Spawn(true);
             nextECard.GetComponent<CardInfo>().value = i + 1;
             nextECard.GetComponent<CardInfo>().type = Elements.Element.EARTH;
-            //Debug.Log("Requesting ID!");
-            //RequestCardIdServerRpc(new ServerRpcParams());
-            //while (!_nextIdReady) await Task.Delay(100);
-            //Debug.Log("Found Id");
-            //nextECard.GetComponent<CardInfo>().SetCardId(_nextId);
-            //_nextIdReady = false;
+            Debug.Log("Requesting ID!");
+            RequestCardIdServerRpc(new ServerRpcParams());
+            while (!_nextIdReady) await Task.Delay(100);
+            Debug.Log("Found Id");
+            nextECard.GetComponent<CardInfo>().SetCardId(_nextId);
+            _nextIdReady = false;
 
             GameObject nextFCard = Instantiate(Resources.Load("Card"), transform.position, transform.rotation) as GameObject;
             nextFCard.GetComponent<NetworkObject>().Spawn(true);
             nextFCard.GetComponent<CardInfo>().value = i + 1;
             nextFCard.GetComponent<CardInfo>().type = Elements.Element.FIRE;
-            //RequestCardIdServerRpc(new ServerRpcParams());
-            //while (!_nextIdReady) await Task.Delay(100);
-            //nextFCard.GetComponent<CardInfo>().SetCardId(_nextId);
-            //_nextIdReady = false;
+            RequestCardIdServerRpc(new ServerRpcParams());
+            while (!_nextIdReady) await Task.Delay(100);
+            nextFCard.GetComponent<CardInfo>().SetCardId(_nextId);
+            _nextIdReady = false;
 
             GameObject nextMCard = Instantiate(Resources.Load("Card"), transform.position, transform.rotation) as GameObject;
             nextMCard.GetComponent<NetworkObject>().Spawn(true);
             nextMCard.GetComponent<CardInfo>().value = i + 1;
             nextMCard.GetComponent<CardInfo>().type = Elements.Element.METAL;
-            //RequestCardIdServerRpc(new ServerRpcParams());
-            //while (!_nextIdReady) await Task.Delay(100);
-            //nextMCard.GetComponent<CardInfo>().SetCardId(_nextId);
-            //_nextIdReady = false;
+            RequestCardIdServerRpc(new ServerRpcParams());
+            while (!_nextIdReady) await Task.Delay(100);
+            nextMCard.GetComponent<CardInfo>().SetCardId(_nextId);
+            _nextIdReady = false;
 
             GameObject nextWaCard = Instantiate(Resources.Load("Card"), transform.position, transform.rotation) as GameObject;
             nextWaCard.GetComponent<NetworkObject>().Spawn(true);
             nextWaCard.GetComponent<CardInfo>().value = i + 1;
             nextWaCard.GetComponent<CardInfo>().type = Elements.Element.WATER;
-            //RequestCardIdServerRpc(new ServerRpcParams());
-            //while (!_nextIdReady) await Task.Delay(100);
-            //nextWaCard.GetComponent<CardInfo>().SetCardId(_nextId);
-            //_nextIdReady = false;
+            RequestCardIdServerRpc(new ServerRpcParams());
+            while (!_nextIdReady) await Task.Delay(100);
+            nextWaCard.GetComponent<CardInfo>().SetCardId(_nextId);
+            _nextIdReady = false;
 
             GameObject nextWoCard = Instantiate(Resources.Load("Card"), transform.position, transform.rotation) as GameObject;
             nextWoCard.GetComponent<NetworkObject>().Spawn(true);
             nextWoCard.GetComponent<CardInfo>().value = i + 1;
             nextWoCard.GetComponent<CardInfo>().type = Elements.Element.WOOD;
-            //RequestCardIdServerRpc(new ServerRpcParams());
-            //while (!_nextIdReady) await Task.Delay(100);
-            //nextWoCard.GetComponent<CardInfo>().SetCardId(_nextId);
-            //_nextIdReady = false;
+            RequestCardIdServerRpc(new ServerRpcParams());
+            while (!_nextIdReady) await Task.Delay(100);
+            nextWoCard.GetComponent<CardInfo>().SetCardId(_nextId);
+            _nextIdReady = false;
 
             AddCard(ref deck, nextECard, ref slot);
             AddCard(ref deck, nextFCard, ref slot);
