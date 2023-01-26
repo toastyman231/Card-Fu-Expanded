@@ -74,4 +74,17 @@ public class PlayerDeck : NetworkBehaviour
     {
         return slot == deck.Length;
     }
+
+    public static GameObject GetCardById(ulong cardId)
+    {
+        foreach (GameObject card in GameObject.FindGameObjectsWithTag("Card"))
+        {
+            if (card.GetComponent<NetworkObject>().NetworkObjectId == cardId)
+            {
+                return card;
+            }
+        }
+
+        return null;
+    }
 }

@@ -66,6 +66,24 @@ public class MultiplayerSession : NetworkBehaviour
         ShuffleDecksClientRpc();
 
         StartDealingServerRpc(new ServerRpcParams());
+
+        while (!(NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerInfo>().pickedCard.Value &&
+                 NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerInfo>().pickedCard.Value))
+            await Task.Delay(100);
+        ResetPickedCards();
+
+        GameObject p1Card = PlayerDeck.GetCardById(NetworkManager.ConnectedClients[0].PlayerObject
+            .GetComponent<PlayerInfo>().selectedCardId.Value);
+        GameObject p2Card = PlayerDeck.GetCardById(NetworkManager.ConnectedClients[1].PlayerObject
+            .GetComponent<PlayerInfo>().selectedCardId.Value);
+        p1Card.transform.position = new Vector3(-1, 0, 1);
+        p2Card.transform.position = new Vector3(1, 0, 1);
+    }
+
+    private void ResetPickedCards()
+    {
+        NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerInfo>().pickedCard.Value = false;
+        NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerInfo>().pickedCard.Value = false;
     }
 
     [ClientRpc]
@@ -96,6 +114,14 @@ public class MultiplayerSession : NetworkBehaviour
             StartCoroutine(DealPlayer(i + 1, i));
             StartCoroutine(DealOpponent(i + 1, i));
         }
+
+        SetClientReadyToPickServerRpc(new ServerRpcParams());
+    }
+
+    [ServerRpc]
+    private void SetClientReadyToPickServerRpc(ServerRpcParams serverParams)
+    {
+        NetworkManager.ConnectedClients[serverParams.Receive.SenderClientId].PlayerObject.GetComponent<PlayerInfo>().SetReadyToPick(true);
     }
 
     [ServerRpc]
