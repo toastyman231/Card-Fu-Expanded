@@ -64,14 +64,33 @@ public class MultiplayerSession : NetworkBehaviour
         player2Deck.InitializeDeck();
         player2Deck.ShuffleDeck();
 
+        //PlayerDeck temp = player1Deck;
+
+        //if (!IsServer)
+        //{
+        //    player1Deck = player2Deck;
+        //    player2Deck = temp;
+        //}
+
         StartDealingServerRpc(new ServerRpcParams());
     }
 
-    [ServerRpc]
-    private void StartDealingServerRpc(ServerRpcParams serverParams)
+    [ClientRpc]
+    private void SetupDecksClientRpc(ClientRpcParams clientParams)
     {
-        NetworkLog.LogInfoServer("Dealing! Sent by: " + serverParams.Receive.SenderClientId);
+        NetworkLog.LogInfoServer("Switched decks!");
+        PlayerDeck temp = player1Deck;
 
+        player1Deck = player2Deck;
+        player1Deck.transform.position = player2Deck.transform.position;
+        player2Deck = temp;
+        player2Deck.transform.position = temp.transform.position;
+    }
+
+    [ClientRpc]
+    private void DealClientRpc()
+    {
+        NetworkLog.LogInfoServer("Dealing! p1: " + player1Deck.name + ", p2: " + player2Deck.name);
         for (int i = 0; i < 5; i++)
         {
             StartCoroutine(DealPlayer(i + 1, i));
@@ -79,9 +98,25 @@ public class MultiplayerSession : NetworkBehaviour
         }
     }
 
+    [ServerRpc]
+    private void StartDealingServerRpc(ServerRpcParams serverParams)
+    {
+        NetworkLog.LogInfoServer("Dealing! Sent by: " + serverParams.Receive.SenderClientId);
+        SetupDecksClientRpc(new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new List<ulong> { 1 } } });
+
+        DealClientRpc();
+        //for (int i = 0; i < 5; i++)
+        //{
+        //    StartCoroutine(DealPlayer(i + 1, i));
+        //    StartCoroutine(DealOpponent(i + 1, i));
+        //}
+    }
+
     IEnumerator DealPlayer(int waitTime, int handPos)
     {
         yield return new WaitForSeconds(waitTime * 0.2f);
+        CardInfo info = player1Deck.deck[drawCount].GetComponent<CardInfo>();
+        NetworkLog.LogInfoServer("Card drawn: " + info.type + ", " + info.value);
         playerHand[handPos] = player1Deck.deck[drawCount];//PlayerDeck.GetCardById(player1Deck.deck[drawCount]);
         //PlayerDeck.GetCardById(playerDeck.Value.deck[drawCount]).transform.position = GameObject.FindGameObjectWithTag("PlayerDraw").transform.position;
         player1Deck.deck[drawCount].transform.position = GameObject.FindGameObjectWithTag("PlayerDraw").transform.position;

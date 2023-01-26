@@ -273,7 +273,6 @@ GameObject:
   - component: {fileID: 2780259463487830852}
   - component: {fileID: -1237666630894048726}
   - component: {fileID: -1276185936158556286}
-  - component: {fileID: 3211018405682499762}
   m_Layer: 0
   m_Name: Card
   m_TagString: Card
@@ -552,7 +551,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5809531268930059011}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
@@ -571,80 +570,6 @@ MonoBehaviour:
   ScaleThreshold: 0.01
   InLocalSpace: 0
   Interpolate: 1
---- !u!114 &3211018405682499762
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5809531268930059011}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8d0727d5ae3244e3b569694d3912374, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  TransitionStateInfoList:
-  - Layer: 0
-    OriginatingState: -450218366
-    DestinationState: 986467179
-    TransitionDuration: 0
-    TriggerNameHash: 986467179
-    TransitionIndex: 0
-  - Layer: 0
-    OriginatingState: -450218366
-    DestinationState: -1984117863
-    TransitionDuration: 0
-    TriggerNameHash: 324615789
-    TransitionIndex: 1
-  - Layer: 0
-    OriginatingState: 1020763940
-    DestinationState: -61391398
-    TransitionDuration: 0
-    TriggerNameHash: 1882835586
-    TransitionIndex: 0
-  - Layer: 0
-    OriginatingState: 1020763940
-    DestinationState: 1349135636
-    TransitionDuration: 0
-    TriggerNameHash: -893021904
-    TransitionIndex: 1
-  - Layer: 0
-    OriginatingState: 1020763940
-    DestinationState: -178212294
-    TransitionDuration: 0
-    TriggerNameHash: -2006497819
-    TransitionIndex: 2
-  - Layer: 0
-    OriginatingState: 1020763940
-    DestinationState: 1836369764
-    TransitionDuration: 0
-    TriggerNameHash: 250820427
-    TransitionIndex: 3
-  - Layer: 0
-    OriginatingState: 1020763940
-    DestinationState: -59811935
-    TransitionDuration: 0
-    TriggerNameHash: -492784346
-    TransitionIndex: 4
-  - Layer: 0
-    OriginatingState: 1020763940
-    DestinationState: 441246912
-    TransitionDuration: 0
-    TriggerNameHash: 1645787391
-    TransitionIndex: 5
-  - Layer: 0
-    OriginatingState: 1020763940
-    DestinationState: 2050359991
-    TransitionDuration: 0
-    TriggerNameHash: 1477630351
-    TransitionIndex: 6
-  - Layer: 0
-    OriginatingState: 1020763940
-    DestinationState: -362331490
-    TransitionDuration: 0
-    TriggerNameHash: -362331490
-    TransitionIndex: 7
-  m_Animator: {fileID: -4861402843049338825}
 --- !u!1 &7718110205267242345
 GameObject:
   m_ObjectHideFlags: 0
