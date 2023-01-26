@@ -74,14 +74,59 @@ public class MultiplayerSession : NetworkBehaviour
             await Task.Delay(100);
         ResetPickedCardsClientRpc();
 
-        GameObject p1Card = PlayerDeck.GetCardById(NetworkManager.ConnectedClients[0].PlayerObject
+        GameLoopServerRpc();
+    }
+
+    [ServerRpc]
+    private void GameLoopServerRpc()
+    {
+        DisableHandsClientRpc();
+
+        PlayCardsClientRpc(NetworkManager.ConnectedClients[0].PlayerObject
+            .GetComponent<PlayerInfo>().selectedCardId.Value, NetworkManager.ConnectedClients[1].PlayerObject
             .GetComponent<PlayerInfo>().selectedCardId.Value);
-        GameObject p2Card = PlayerDeck.GetCardById(NetworkManager.ConnectedClients[1].PlayerObject
-            .GetComponent<PlayerInfo>().selectedCardId.Value);
-        p1Card.transform.position = new Vector3(-1, 0, 1);
-        p2Card.transform.position = new Vector3(1, 0, 1);
-        NetworkLog.LogInfoServer("Played " + p1Card.GetComponent<CardInfo>().ToString());
-        NetworkLog.LogInfoServer("Played " + p2Card.GetComponent<CardInfo>().ToString());
+
+
+    }
+
+    [ClientRpc]
+    private void PlayCardsClientRpc(ulong cardId1, ulong cardId2)
+    {
+        ulong playerCardId = (cardId1 == NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerInfo>().selectedCardId.Value) ?
+            cardId1 : cardId2;
+        ulong opponentCardId = (cardId1 == NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerInfo>().selectedCardId.Value) ?
+            cardId2 : cardId1;
+
+        GameObject playerCard = PlayerDeck.GetCardById(playerCardId);
+        GameObject opponentCard = PlayerDeck.GetCardById(opponentCardId);
+
+        Vector2 cardPos = playerCard.transform.position;
+        Vector2 destPos = GameObject.FindGameObjectWithTag("PlayerPlay").transform.position;
+        playerCard.GetComponent<Animator>().SetTrigger("Unflip");
+        StartCoroutine(MoveCard(playerCard, cardPos, destPos, new Vector2(0.25f, 0.25f), new Vector2(0.15f, 0.15f)));
+
+        //Opponent
+        Vector2 oppCardPos = opponentCard.transform.position;
+        Vector2 oppDestPos = GameObject.FindGameObjectWithTag("OpponentPlay").transform.position;
+        StartCoroutine(MoveCard(opponentCard, oppCardPos, oppDestPos, new Vector2(0.25f, 0.25f), new Vector2(0.15f, 0.15f)));
+
+        cardsDealt -= 2;
+        StartCoroutine(WaitAndFlip());
+
+        playerCard.GetComponent<Animator>().SetTrigger("Flip");
+        opponentCard.GetComponent<Animator>().SetTrigger("FlipU");
+
+        StartCoroutine(WaitAndBoost());
+        //selectionStage = false;
+    }
+
+    [ClientRpc]
+    private void DisableHandsClientRpc()
+    {
+        foreach (GameObject card in playerHand)
+        {
+            card.GetComponent<BoxCollider2D>().enabled = true;
+        }
     }
 
     [ClientRpc]
@@ -147,7 +192,7 @@ public class MultiplayerSession : NetworkBehaviour
         Vector2 cardPos = player1Deck.deck[drawCount].transform.position;
         Vector2 destPos = new Vector2(-3.6f + (handPos * 1.8f), -4.4f);
         player1Deck.deck[drawCount].GetComponent<Animator>().SetTrigger("Flip");
-        StartCoroutine(MoveCard(player1Deck.deck[drawCount], cardPos, destPos, new Vector2(0.15f, 0.15f), new Vector2(0.25f, 0.25f)));
+        StartCoroutine(MoveCard(player1Deck.deck[drawCount], cardPos, destPos, new Vector2(0.15f, 0.15f), new Vector2(0.25f, 0.25f), true));
         ++cardsDealt;
     }
 
@@ -174,7 +219,7 @@ public class MultiplayerSession : NetworkBehaviour
         }
     }
 
-    IEnumerator MoveCard(GameObject card, Vector2 startPos, Vector2 destPos, Vector2 startSize, Vector2 endSize)
+    IEnumerator MoveCard(GameObject card, Vector2 startPos, Vector2 destPos, Vector2 startSize, Vector2 endSize, bool makePickable = false)
     {
         float lerpTime = 0;
         source.Play();
@@ -197,7 +242,22 @@ public class MultiplayerSession : NetworkBehaviour
         card.transform.Find("Type").GetComponent<TMPro.TextMeshPro>().sortingOrder = 5;
         card.transform.Find("Symbol").GetComponent<SpriteRenderer>().sortingOrder = 5;
         card.transform.position = destPos;
+        if (makePickable) card.GetComponent<BoxCollider2D>().enabled = true;
         yield return null;
+    }
+
+    IEnumerator WaitAndFlip()
+    {
+        yield return new WaitForSeconds(1);
+
+        //revealStage = true;
+    }
+
+    IEnumerator WaitAndBoost()
+    {
+        yield return new WaitForSeconds(1);
+
+        //boostStage = true;
     }
 
     private void OnApplicationQuit()
