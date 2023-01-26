@@ -55,14 +55,17 @@ public class MultiplayerSession : NetworkBehaviour
         opponentHand = new GameObject[5];
         source = GetComponent<AudioSource>();
 
+        if (!IsHost) return;
+
         while (NetworkManager.ConnectedClientsIds.Count != 2) await Task.Delay(100);
 
         NetworkLog.LogInfoServer("2 Players reached!");
 
         player1Deck.InitializeDeck();
-        player1Deck.ShuffleDeck();
+        //player1Deck.ShuffleDeck();
         player2Deck.InitializeDeck();
-        player2Deck.ShuffleDeck();
+        //player2Deck.ShuffleDeck();
+        ShuffleDecksClientRpc();
 
         //PlayerDeck temp = player1Deck;
 
@@ -73,6 +76,13 @@ public class MultiplayerSession : NetworkBehaviour
         //}
 
         StartDealingServerRpc(new ServerRpcParams());
+    }
+
+    [ClientRpc]
+    private void ShuffleDecksClientRpc()
+    {
+        player1Deck.ShuffleDeck();
+        player2Deck.ShuffleDeck();
     }
 
     [ClientRpc]
@@ -114,30 +124,30 @@ public class MultiplayerSession : NetworkBehaviour
 
     IEnumerator DealPlayer(int waitTime, int handPos)
     {
+        NetworkLog.LogInfoServer("Dealing player!");
         yield return new WaitForSeconds(waitTime * 0.2f);
-        CardInfo info = player1Deck.deck[drawCount].GetComponent<CardInfo>();
-        NetworkLog.LogInfoServer("Card drawn: " + info.type + ", " + info.value);
-        playerHand[handPos] = player1Deck.deck[drawCount];//PlayerDeck.GetCardById(player1Deck.deck[drawCount]);
-        //PlayerDeck.GetCardById(playerDeck.Value.deck[drawCount]).transform.position = GameObject.FindGameObjectWithTag("PlayerDraw").transform.position;
+        //CardInfo info = player1Deck.deck[drawCount].GetComponent<CardInfo>();
+        //NetworkLog.LogInfoServer("Card drawn: " + info.type + ", " + info.value);
+        playerHand[handPos] = player1Deck.deck[drawCount];
+        NetworkLog.LogInfoServer((player1Deck.deck[drawCount] == null).ToString());
         player1Deck.deck[drawCount].transform.position = GameObject.FindGameObjectWithTag("PlayerDraw").transform.position;
-        Vector2 cardPos = player1Deck.deck[drawCount].transform.position;//PlayerDeck.GetCardById(playerDeck.Value.deck[drawCount]).transform.position;
+        Vector2 cardPos = player1Deck.deck[drawCount].transform.position;
         Vector2 destPos = new Vector2(-3.6f + (handPos * 1.8f), -4.4f);
-        //PlayerDeck.GetCardById(playerDeck.Value.deck[drawCount]).GetComponent<Animator>().SetTrigger("Flip");
         player1Deck.deck[drawCount].GetComponent<Animator>().SetTrigger("Flip");
         StartCoroutine(MoveCard(player1Deck.deck[drawCount], cardPos, destPos, new Vector2(0.15f, 0.15f), new Vector2(0.25f, 0.25f)));
-        //StartCoroutine(MoveCard(PlayerDeck.GetCardById(playerDeck.Value.deck[drawCount]), cardPos, destPos, new Vector2(0.15f, 0.15f), new Vector2(0.25f, 0.25f)));
         ++cardsDealt;
     }
+
     IEnumerator DealOpponent(int waitTime, int handPos)
     {
+        NetworkLog.LogInfoServer("Dealing opponent!");
         yield return new WaitForSeconds(waitTime * 0.2f);
-        opponentHand[handPos] = player2Deck.deck[drawCount];//PlayerDeck.GetCardById(opponentDeck.Value.deck[drawCount]);
-        //PlayerDeck.GetCardById(opponentDeck.Value.deck[drawCount]).transform.position = GameObject.FindGameObjectWithTag("OpponentDraw").transform.position;
+        opponentHand[handPos] = player2Deck.deck[drawCount];
+        NetworkLog.LogInfoServer((player2Deck.deck[drawCount] == null).ToString());
         player2Deck.deck[drawCount].transform.position = GameObject.FindGameObjectWithTag("OpponentDraw").transform.position;
-        Vector2 cardPos = player2Deck.deck[drawCount].transform.position;//PlayerDeck.GetCardById(opponentDeck.Value.deck[drawCount]).transform.position;
+        Vector2 cardPos = player2Deck.deck[drawCount].transform.position;
         Vector2 destPos = new Vector2(-3.6f + (handPos * 1.8f), 4.5f);
         StartCoroutine(MoveCard(player2Deck.deck[drawCount], cardPos, destPos, new Vector2(0.15f, 0.15f), new Vector2(0.25f, 0.25f)));
-        //StartCoroutine(MoveCard(PlayerDeck.GetCardById(opponentDeck.Value.deck[drawCount]), cardPos, destPos, new Vector2(0.15f, 0.15f), new Vector2(0.25f, 0.25f)));
         ++cardsDealt;
         if (drawCount == 49)
         {

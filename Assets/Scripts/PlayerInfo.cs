@@ -13,7 +13,8 @@ public class PlayerInfo : NetworkBehaviour
     {
         base.OnNetworkDespawn();
 
-        NetworkManager.SceneManager.LoadScene("Menu", LoadSceneMode.Single);
+        if (IsHost) NetworkManager.SceneManager.LoadScene("Menu", LoadSceneMode.Single);
+        else SceneManager.LoadScene("Menu", LoadSceneMode.Single);
     }
 }
 

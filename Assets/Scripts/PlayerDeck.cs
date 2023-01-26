@@ -6,10 +6,12 @@ using Unity.Netcode;
 public class PlayerDeck : NetworkBehaviour
 {
     public GameObject[] deck;
+    public int slot;
 
     public override void OnNetworkSpawn()
     {
         deck = new GameObject[50];
+        slot = 0;
     }
 
     [ClientRpc]
@@ -21,7 +23,7 @@ public class PlayerDeck : NetworkBehaviour
     public void InitializeDeck()
     {
         NetworkLog.LogInfoServer("Initializing deck");
-        int slot = 0;
+        //int slot = 0;
         for (int i = 0; i < 10; i++)
         {
             GameObject nextECard = Instantiate(Resources.Load("Card"), transform.position, transform.rotation) as GameObject;
@@ -44,15 +46,15 @@ public class PlayerDeck : NetworkBehaviour
             nextWoCard.GetComponent<NetworkObject>().Spawn(true);
             SetCardValuesClientRpc(i + 1, Elements.Element.WOOD);
 
-            AddCard(ref deck, nextECard, ref slot);
-            AddCard(ref deck, nextFCard,ref  slot);
-            AddCard(ref deck, nextMCard, ref slot);
-            AddCard(ref deck, nextWaCard, ref slot);
-            AddCard(ref deck, nextWoCard, ref slot);
+            AddCard(nextECard);
+            AddCard(nextFCard);
+            AddCard(nextMCard);
+            AddCard(nextWaCard);
+            AddCard(nextWoCard);
         }
     }
 
-    private void AddCard(ref GameObject[] deck, GameObject card, ref int slot)
+    public void AddCard(GameObject card)
     {
         deck[slot] = card;
         ++slot;
@@ -64,9 +66,12 @@ public class PlayerDeck : NetworkBehaviour
         {
             int pos1 = Random.Range(0, 50);
             int pos2 = Random.Range(0, 50);
-            GameObject temp = deck[pos1];
-            deck[pos1] = deck[pos2];
-            deck[pos2] = temp;
+            (deck[pos1], deck[pos2]) = (deck[pos2], deck[pos1]);
         }
+    }
+
+    public bool IsFull()
+    {
+        return slot == deck.Length;
     }
 }

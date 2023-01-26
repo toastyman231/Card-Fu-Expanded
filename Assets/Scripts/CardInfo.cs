@@ -25,14 +25,42 @@ public class CardInfo : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         recentCard = this;
-        SetupCard(value, type);
-        source = GetComponent<AudioSource>();        
+        //SetupCard(value, type);
+        source = GetComponent<AudioSource>();
+        if (IsHost) return;
+
+        PlayerDeck player1Deck = GameObject.FindGameObjectWithTag("PlayerDraw").GetComponent<PlayerDeck>();
+        if (!player1Deck.IsFull())
+        {
+            NetworkLog.LogInfoServer("Adding to p1 deck");
+            player1Deck.AddCard(gameObject);
+        }
+        else
+        {
+            NetworkLog.LogInfoServer("P1 full, adding to p2");
+            PlayerDeck player2Deck = GameObject.FindGameObjectWithTag("OpponentDraw").GetComponent<PlayerDeck>();
+            if (!player2Deck.IsFull())
+            {
+                player2Deck.AddCard(gameObject);
+            }
+            else
+            {
+                NetworkLog.LogInfoServer("P2 full");
+            }
+        }
     }
 
-    public void SetupCard(int value, Elements.Element element)
+    public override string ToString()
     {
+        return type + " " + value;
+    }
+
+    public void SetupCard(int val, Elements.Element element)
+    {
+        value = val;
+        type = element;
         cardType.text = element.ToString();
-        cardValue.text = value.ToString();
+        cardValue.text = val.ToString();
 
         switch (element)
         {
