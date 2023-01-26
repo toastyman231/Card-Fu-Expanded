@@ -6,8 +6,10 @@ using UnityEngine.SceneManagement;
 
 public class PlayerInfo : NetworkBehaviour
 {
-    public NetworkVariable<ulong> selectedCardId = new NetworkVariable<ulong>();
-    public NetworkVariable<bool> pickedCard = new NetworkVariable<bool>();
+    public NetworkVariable<ulong> selectedCardId = 
+        new NetworkVariable<ulong>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<bool> pickedCard = 
+        new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     private bool readyToPick = false;
 
     public override void OnNetworkDespawn()

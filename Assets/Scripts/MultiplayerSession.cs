@@ -61,6 +61,8 @@ public class MultiplayerSession : NetworkBehaviour
 
         NetworkLog.LogInfoServer("2 Players reached!");
 
+        await Task.Delay(100);
+
         player1Deck.InitializeDeck();
         player2Deck.InitializeDeck();
         ShuffleDecksClientRpc();
@@ -70,7 +72,7 @@ public class MultiplayerSession : NetworkBehaviour
         while (!(NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerInfo>().pickedCard.Value &&
                  NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerInfo>().pickedCard.Value))
             await Task.Delay(100);
-        ResetPickedCards();
+        ResetPickedCardsClientRpc();
 
         GameObject p1Card = PlayerDeck.GetCardById(NetworkManager.ConnectedClients[0].PlayerObject
             .GetComponent<PlayerInfo>().selectedCardId.Value);
@@ -78,12 +80,14 @@ public class MultiplayerSession : NetworkBehaviour
             .GetComponent<PlayerInfo>().selectedCardId.Value);
         p1Card.transform.position = new Vector3(-1, 0, 1);
         p2Card.transform.position = new Vector3(1, 0, 1);
+        NetworkLog.LogInfoServer("Played " + p1Card.GetComponent<CardInfo>().ToString());
+        NetworkLog.LogInfoServer("Played " + p2Card.GetComponent<CardInfo>().ToString());
     }
 
-    private void ResetPickedCards()
+    [ClientRpc]
+    private void ResetPickedCardsClientRpc()
     {
-        NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerInfo>().pickedCard.Value = false;
-        NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerInfo>().pickedCard.Value = false;
+        NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerInfo>().pickedCard.Value = false;
     }
 
     [ClientRpc]
@@ -96,7 +100,7 @@ public class MultiplayerSession : NetworkBehaviour
     [ClientRpc]
     private void SetupDecksClientRpc(ClientRpcParams clientParams)
     {
-        NetworkLog.LogInfoServer("Switched decks!");
+        //NetworkLog.LogInfoServer("Switched decks!");
         PlayerDeck temp = player1Deck;
 
         player1Deck = player2Deck;
@@ -108,26 +112,20 @@ public class MultiplayerSession : NetworkBehaviour
     [ClientRpc]
     private void DealClientRpc()
     {
-        NetworkLog.LogInfoServer("Dealing! p1: " + player1Deck.name + ", p2: " + player2Deck.name);
+        //NetworkLog.LogInfoServer("Dealing! p1: " + player1Deck.name + ", p2: " + player2Deck.name);
         for (int i = 0; i < 5; i++)
         {
             StartCoroutine(DealPlayer(i + 1, i));
             StartCoroutine(DealOpponent(i + 1, i));
         }
 
-        SetClientReadyToPickServerRpc(new ServerRpcParams());
-    }
-
-    [ServerRpc]
-    private void SetClientReadyToPickServerRpc(ServerRpcParams serverParams)
-    {
-        NetworkManager.ConnectedClients[serverParams.Receive.SenderClientId].PlayerObject.GetComponent<PlayerInfo>().SetReadyToPick(true);
+        NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerInfo>().SetReadyToPick(true);
     }
 
     [ServerRpc]
     private void StartDealingServerRpc(ServerRpcParams serverParams)
     {
-        NetworkLog.LogInfoServer("Dealing! Sent by: " + serverParams.Receive.SenderClientId);
+        //NetworkLog.LogInfoServer("Dealing! Sent by: " + serverParams.Receive.SenderClientId);
         SetupDecksClientRpc(new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new List<ulong> { 1 } } });
 
         DealClientRpc();
@@ -141,7 +139,7 @@ public class MultiplayerSession : NetworkBehaviour
 
     IEnumerator DealPlayer(int waitTime, int handPos)
     {
-        NetworkLog.LogInfoServer("Dealing player!");
+        //NetworkLog.LogInfoServer("Dealing player!");
         yield return new WaitForSeconds(waitTime * 0.2f);
 
         playerHand[handPos] = player1Deck.deck[drawCount];
