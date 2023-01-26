@@ -50,6 +50,7 @@ TagManager:
   - HS1
   - HS2
   - Card
+  - NetworkManager
   layers:
   - Default
   - TransparentFX

@@ -3776,6 +3776,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  slot: 0
 --- !u!114 &1423891363
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4873,6 +4874,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  slot: 0
 --- !u!114 &1831408315
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -10,11 +10,17 @@ public class NetworkSetup : MonoBehaviour
     //[SerializeField] private Button serverBtn;
     [SerializeField] private Button hostBtn;
     [SerializeField] private Button clientBtn;
+    [SerializeField] private GameObject netManagerPrefab;
 
     private Options gameOptions;
 
     private void Awake()
     {
+        if (GameObject.FindGameObjectWithTag("NetworkManager") == null)
+        {
+            Instantiate(netManagerPrefab, transform.position, Quaternion.identity);
+        }
+
         gameOptions = GameObject.FindGameObjectWithTag("Options").GetComponent<Options>();
         /*serverBtn.onClick.AddListener(() =>
         {

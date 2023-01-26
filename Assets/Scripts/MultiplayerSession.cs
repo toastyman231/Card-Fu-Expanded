@@ -62,18 +62,8 @@ public class MultiplayerSession : NetworkBehaviour
         NetworkLog.LogInfoServer("2 Players reached!");
 
         player1Deck.InitializeDeck();
-        //player1Deck.ShuffleDeck();
         player2Deck.InitializeDeck();
-        //player2Deck.ShuffleDeck();
         ShuffleDecksClientRpc();
-
-        //PlayerDeck temp = player1Deck;
-
-        //if (!IsServer)
-        //{
-        //    player1Deck = player2Deck;
-        //    player2Deck = temp;
-        //}
 
         StartDealingServerRpc(new ServerRpcParams());
     }
@@ -115,21 +105,20 @@ public class MultiplayerSession : NetworkBehaviour
         SetupDecksClientRpc(new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new List<ulong> { 1 } } });
 
         DealClientRpc();
-        //for (int i = 0; i < 5; i++)
-        //{
-        //    StartCoroutine(DealPlayer(i + 1, i));
-        //    StartCoroutine(DealOpponent(i + 1, i));
-        //}
+    }
+
+    [ServerRpc]
+    private void RequestReshuffleServerRpc()
+    {
+        ShuffleDecksClientRpc();
     }
 
     IEnumerator DealPlayer(int waitTime, int handPos)
     {
         NetworkLog.LogInfoServer("Dealing player!");
         yield return new WaitForSeconds(waitTime * 0.2f);
-        //CardInfo info = player1Deck.deck[drawCount].GetComponent<CardInfo>();
-        //NetworkLog.LogInfoServer("Card drawn: " + info.type + ", " + info.value);
+
         playerHand[handPos] = player1Deck.deck[drawCount];
-        NetworkLog.LogInfoServer((player1Deck.deck[drawCount] == null).ToString());
         player1Deck.deck[drawCount].transform.position = GameObject.FindGameObjectWithTag("PlayerDraw").transform.position;
         Vector2 cardPos = player1Deck.deck[drawCount].transform.position;
         Vector2 destPos = new Vector2(-3.6f + (handPos * 1.8f), -4.4f);
@@ -140,10 +129,9 @@ public class MultiplayerSession : NetworkBehaviour
 
     IEnumerator DealOpponent(int waitTime, int handPos)
     {
-        NetworkLog.LogInfoServer("Dealing opponent!");
+        //NetworkLog.LogInfoServer("Dealing opponent!");
         yield return new WaitForSeconds(waitTime * 0.2f);
         opponentHand[handPos] = player2Deck.deck[drawCount];
-        NetworkLog.LogInfoServer((player2Deck.deck[drawCount] == null).ToString());
         player2Deck.deck[drawCount].transform.position = GameObject.FindGameObjectWithTag("OpponentDraw").transform.position;
         Vector2 cardPos = player2Deck.deck[drawCount].transform.position;
         Vector2 destPos = new Vector2(-3.6f + (handPos * 1.8f), 4.5f);
@@ -152,9 +140,9 @@ public class MultiplayerSession : NetworkBehaviour
         if (drawCount == 49)
         {
             drawCount = 0;
+            RequestReshuffleServerRpc();
             //ShuffleDeck(playerDeck.Value);
             //ShuffleDeck(opponentDeck.Value);
-            // TODO: bring this back
         }
         else
         {
@@ -186,5 +174,10 @@ public class MultiplayerSession : NetworkBehaviour
         card.transform.Find("Symbol").GetComponent<SpriteRenderer>().sortingOrder = 5;
         card.transform.position = destPos;
         yield return null;
+    }
+
+    private void OnApplicationQuit()
+    {
+        NetworkManager.Singleton.Shutdown();
     }
 }

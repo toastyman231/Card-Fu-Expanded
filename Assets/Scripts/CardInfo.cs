@@ -25,7 +25,6 @@ public class CardInfo : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         recentCard = this;
-        //SetupCard(value, type);
         source = GetComponent<AudioSource>();
         if (IsHost) return;
 
