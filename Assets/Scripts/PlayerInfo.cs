@@ -10,7 +10,18 @@ public class PlayerInfo : NetworkBehaviour
         new NetworkVariable<ulong>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<bool> pickedCard = 
         new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
+    public NetworkVariable<int>[] playerWins = new NetworkVariable<int>[5];
     private bool readyToPick = false;
+
+    public override void OnNetworkSpawn()
+    {
+        for (int i = 0; i < playerWins.Length; i++)
+        {
+            playerWins[i] = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone,
+                NetworkVariableWritePermission.Owner);
+        }
+    }
 
     public override void OnNetworkDespawn()
     {
@@ -20,6 +31,17 @@ public class PlayerInfo : NetworkBehaviour
 
         if (IsHost) NetworkManager.SceneManager.LoadScene("Menu", LoadSceneMode.Single);
         else SceneManager.LoadScene("Menu", LoadSceneMode.Single);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            for (int i = 0; i < playerWins.Length; i++)
+            {
+                NetworkLog.LogInfoServer(playerWins[i].Value.ToString());
+            }
+        }
     }
 
     public void SetReadyToPick(bool ready)
