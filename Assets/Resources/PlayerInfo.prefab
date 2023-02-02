@@ -47,7 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 951099334
   AlwaysReplicateAsRoot: 0
-  DontDestroyWithOwner: 0
+  DontDestroyWithOwner: 1
   AutoObjectParentSync: 1
 --- !u!114 &-1248209060591088098
 MonoBehaviour:
@@ -61,3 +61,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05ee01eb30399e64799837c1fa2bdd65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  selectedCardId:
+    m_InternalValue: 0
+  pickedCard:
+    m_InternalValue: 0
+  playerWins:
+  - m_InternalValue: 0
+  - m_InternalValue: 0
+  - m_InternalValue: 0
+  - m_InternalValue: 0
+  - m_InternalValue: 0

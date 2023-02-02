@@ -23,26 +23,26 @@ public class MultiplayerSession : NetworkBehaviour
     GameObject[] playerHand;
     GameObject[] opponentHand;
     public GameObject selectedCard;
-    GameObject opponentCard;
+    //GameObject opponentCard;
     Elements.Element winningType;
     private Elements.Element losingType;
     AudioSource source;
     private ulong roundWinnerId;
     private List<ulong> roundResults;
-    bool readyToStart = false;
-    bool hasStarted = false;
-    bool selectionStage = false;
-    bool revealStage = false;
-    bool boostStage = false;
-    bool checkBoost = false;
-    bool winnerStage = false;
-    bool clearingStage = false;
-    bool pointsStage = false;
-    bool wincheckStage = false;
-    bool restartStage = false;
-    bool playerWon = false;
-    bool wasTie = false;
-    bool wasBoosted = false;
+    bool readyToPick = false;
+    //bool hasStarted = false;
+    //bool selectionStage = false;
+    //bool revealStage = false;
+    //bool boostStage = false;
+    //bool checkBoost = false;
+    //bool winnerStage = false;
+    //bool clearingStage = false;
+    //bool pointsStage = false;
+    //bool wincheckStage = false;
+    //bool restartStage = false;
+    //bool playerWon = false;
+    //bool wasTie = false;
+    //bool wasBoosted = false;
     bool overallWinner = false;
     int drawCount = 0;
     int cardsDealt = 0;
@@ -84,12 +84,16 @@ public class MultiplayerSession : NetworkBehaviour
 
         StartDealingServerRpc(new ServerRpcParams());
 
-        while (!(NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerInfo>().pickedCard.Value &&
-                 NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerInfo>().pickedCard.Value))
-            await Task.Delay(100);
-        ResetPickedCardsClientRpc();
+        while (!overallWinner)
+        {
+            while (!(NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerInfo>().pickedCard.Value &&
+                 NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerInfo>().pickedCard.Value) || !readyToPick)
+                await Task.Delay(100);
+            ToggleReadyToPickClientRpc();
+            ResetPickedCardsClientRpc();
 
-        GameLoopServerRpc();
+            GameLoopServerRpc();
+        }
     }
 
     [ServerRpc]
@@ -119,7 +123,8 @@ public class MultiplayerSession : NetworkBehaviour
         else
         {
             // Show results to clients
-            ulong loserCardId = NetworkManager.ConnectedClients[roundResults[0]].PlayerObject.GetComponent<PlayerInfo>()
+            ulong loserId = (roundWinnerId == (ulong)0) ? 1u : 0u;
+            ulong loserCardId = NetworkManager.ConnectedClients[loserId].PlayerObject.GetComponent<PlayerInfo>()
                 .selectedCardId.Value;
             ulong winnerCardId = NetworkManager.ConnectedClients[roundWinnerId].PlayerObject.GetComponent<PlayerInfo>()
                 .selectedCardId.Value;
@@ -183,7 +188,7 @@ public class MultiplayerSession : NetworkBehaviour
             oppInfo.cardValue.color = new Color(0, 0.5f, 0, 1);
             source.clip = Resources.Load<AudioClip>("Sounds/Boost");
             source.Play();
-            wasBoosted = true;
+            //wasBoosted = true;
         }
         else if (oppInfo.type == Elements.Element.FIRE && playerInfo.type == Elements.Element.EARTH ||
                  oppInfo.type == Elements.Element.EARTH && playerInfo.type == Elements.Element.METAL ||
@@ -196,9 +201,9 @@ public class MultiplayerSession : NetworkBehaviour
             playerInfo.cardValue.color = new Color(0, 0.5f, 0, 1);
             source.clip = Resources.Load<AudioClip>("Sounds/Boost");
             source.Play();
-            wasBoosted = true;
+            //wasBoosted = true;
         }
-        else wasBoosted = false;
+        //else wasBoosted = false;
     }
 
     private IEnumerator CheckWinner(float waitTime, GameObject playerCard, GameObject opponentCard)
@@ -271,23 +276,23 @@ public class MultiplayerSession : NetworkBehaviour
             switch (cardType)
             {
                 case Elements.Element.EARTH:
-                    GameObject.FindGameObjectWithTag("PEP" + playerInfo.playerWins[EARTH].Value.ToString())
+                    GameObject.FindGameObjectWithTag("PEP" + playerInfo.GetWins(EARTH).ToString())
                         .GetComponent<SpriteRenderer>().enabled = true;
                     break;
                 case Elements.Element.FIRE:
-                    GameObject.FindGameObjectWithTag("PFP" + playerInfo.playerWins[FIRE].Value.ToString())
+                    GameObject.FindGameObjectWithTag("PFP" + playerInfo.GetWins(FIRE).ToString())
                         .GetComponent<SpriteRenderer>().enabled = true;
                     break;
                 case Elements.Element.METAL:
-                    GameObject.FindGameObjectWithTag("PMP" + playerInfo.playerWins[METAL].Value.ToString())
+                    GameObject.FindGameObjectWithTag("PMP" + playerInfo.GetWins(METAL).ToString())
                         .GetComponent<SpriteRenderer>().enabled = true;
                     break;
                 case Elements.Element.WATER:
-                    GameObject.FindGameObjectWithTag("PWaP" + playerInfo.playerWins[WATER].Value.ToString())
+                    GameObject.FindGameObjectWithTag("PWaP" + playerInfo.GetWins(WATER).ToString())
                         .GetComponent<SpriteRenderer>().enabled = true;
                     break;
                 case Elements.Element.WOOD:
-                    GameObject.FindGameObjectWithTag("PWoP" + playerInfo.playerWins[WOOD].Value.ToString())
+                    GameObject.FindGameObjectWithTag("PWoP" + playerInfo.GetWins(WOOD).ToString())
                         .GetComponent<SpriteRenderer>().enabled = true;
                     break;
             }
@@ -297,9 +302,13 @@ public class MultiplayerSession : NetworkBehaviour
             GetOpponentWinsServerRpc((int)winningType, new ServerRpcParams());
         }
 
+        NetworkLog.LogInfoServer("Deleting winning card");
+        NetworkLog.LogInfoServer("Winning card: " + winningCard.GetComponent<CardInfo>().ToString());
         source.clip = Resources.Load<AudioClip>("Sounds/CardPass3");
         source.Play();
-        winningCard.GetComponent<Animator>().SetTrigger("Fade");
+        winningCard.GetComponent<Animator>().CrossFade(Animator.StringToHash("Fade"), 0);
+        readyToPick = true;
+        //winningCard.GetComponent<Animator>().SetTrigger("Fade");
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -307,7 +316,7 @@ public class MultiplayerSession : NetworkBehaviour
     {
         ulong opponentId = (ulong) ((serverParams.Receive.SenderClientId == (ulong)0) ? 1 : 0);
         int winsCount = NetworkManager.ConnectedClients[opponentId].PlayerObject.GetComponent<PlayerInfo>()
-            .playerWins[type].Value;
+            .GetWins(type);
         UpdateOpponentWinsClientRpc(winsCount, new ClientRpcParams
         {
             Send = new ClientRpcSendParams
@@ -352,8 +361,11 @@ public class MultiplayerSession : NetworkBehaviour
     {
         PlayerInfo playerInfo = NetworkManager.ConnectedClients[serverParams.Receive.SenderClientId].PlayerObject
             .GetComponent<PlayerInfo>();
-        playerInfo.playerWins[type].Value++;
-        NetworkLog.LogInfoServer("Current wins: " + playerInfo.playerWins[type].Value);
+        playerInfo.IncrementPlayerWins(type);
+        //playerInfo.testInt.Value++;
+        //NetworkLog.LogInfoServer("Current wins: " + playerInfo.testInt.Value);
+        //playerInfo.playerWins[type].Value++;
+        NetworkLog.LogInfoServer("Current wins: " + playerInfo.GetWins(type));
     }
 
     [ClientRpc]
@@ -455,6 +467,13 @@ public class MultiplayerSession : NetworkBehaviour
         }
 
         NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerInfo>().SetReadyToPick(true);
+    }
+
+    [ClientRpc]
+    private void ToggleReadyToPickClientRpc()
+    {
+        NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerInfo>().SetReadyToPick(
+            !NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerInfo>().ReadyToPick());
     }
 
     [ServerRpc]
