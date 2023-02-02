@@ -3978,6 +3978,7 @@ GameObject:
   - component: {fileID: 1600436498}
   - component: {fileID: 1600436497}
   - component: {fileID: 1600436501}
+  - component: {fileID: 1600436502}
   m_Layer: 0
   m_Name: QuitButton
   m_TagString: Untagged
@@ -4022,7 +4023,9 @@ MonoBehaviour:
   symbols:
   - {fileID: 490465758}
   - {fileID: 1934277120}
+  multiplayerCanvas: {fileID: 0}
   isStart: 0
+  isMultiplayer: 0
   isRestart: 0
   isInstructions: 0
   isOptions: 0
@@ -4284,6 +4287,22 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1600436502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1600436495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 3546561115
+  AlwaysReplicateAsRoot: 0
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!1 &1677620250
 GameObject:
   m_ObjectHideFlags: 0
@@ -4905,6 +4924,7 @@ GameObject:
   - component: {fileID: 1851389603}
   - component: {fileID: 1851389604}
   - component: {fileID: 1851389605}
+  - component: {fileID: 1851389606}
   m_Layer: 0
   m_Name: RetryButton
   m_TagString: Untagged
@@ -5083,7 +5103,9 @@ MonoBehaviour:
   symbols:
   - {fileID: 284230042}
   - {fileID: 1285763264}
+  multiplayerCanvas: {fileID: 0}
   isStart: 0
+  isMultiplayer: 0
   isRestart: 1
   isInstructions: 0
   isOptions: 0
@@ -5211,6 +5233,22 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1851389606
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1851389599}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 2738563612
+  AlwaysReplicateAsRoot: 0
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!1 &1907780256
 GameObject:
   m_ObjectHideFlags: 0

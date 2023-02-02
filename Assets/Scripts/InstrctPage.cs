@@ -7,6 +7,7 @@ public class InstrctPage : MonoBehaviour
     public GameObject nextPage;
     public GameObject previousPage;
     public GameObject mainMenu;
+    public Canvas multiplayerCanvas;
     public bool isNextButton;
     public bool toMain;
 
@@ -26,6 +27,7 @@ public class InstrctPage : MonoBehaviour
         {
             Vector3 nextPos = mainMenu.transform.position;
             Camera.main.transform.position = new Vector3(nextPos.x, nextPos.y, Camera.main.transform.position.z);
+            if (multiplayerCanvas != null) multiplayerCanvas.GetComponent<Canvas>().enabled = false;
         }
         else if (isNextButton)
         {

@@ -20,7 +20,6 @@ public class Pick : NetworkBehaviour
 
     private void OnMouseDown()
     {
-        Debug.Log("Clicked a card!");
         if (gameOptions.multiplayer)
         {
             if (playerInfo.ReadyToPick())
@@ -35,7 +34,7 @@ public class Pick : NetworkBehaviour
         }
         else
         {
-            NetworkLog.LogInfoServer("Singeplayer picking");
+            //NetworkLog.LogInfoServer("Singeplayer picking");
             GameObject.FindGameObjectWithTag("Game").GetComponent<GameSession>().selectedCard = gameObject;
         }
     }

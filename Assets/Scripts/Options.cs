@@ -5,6 +5,7 @@ using UnityEngine;
 public class Options : MonoBehaviour
 {
     public static Options instance;
+    public string joinCode;
     public bool multiplayer;
     public bool musicOn;
 

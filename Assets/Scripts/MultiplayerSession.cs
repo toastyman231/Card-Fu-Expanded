@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 
 public class MultiplayerSession : NetworkBehaviour
@@ -16,46 +17,19 @@ public class MultiplayerSession : NetworkBehaviour
 
     private readonly int WOOD = 4;
 
-    //private NetworkVariable<NetworkUintArray> playerDeck = new NetworkVariable<NetworkUintArray>(new NetworkUintArray { deck = new uint[50] });
-    //private NetworkVariable<NetworkUintArray> opponentDeck = new NetworkVariable<NetworkUintArray>(new NetworkUintArray { deck = new uint[50] });
     PlayerDeck player1Deck;
     PlayerDeck player2Deck;
     GameObject[] playerHand;
     GameObject[] opponentHand;
-    public GameObject selectedCard;
-    //GameObject opponentCard;
     Elements.Element winningType;
-    private Elements.Element losingType;
     AudioSource source;
     private ulong roundWinnerId;
     private List<ulong> roundResults;
-    bool readyToPick = false;
-    //bool hasStarted = false;
-    //bool selectionStage = false;
-    //bool revealStage = false;
-    //bool boostStage = false;
-    //bool checkBoost = false;
-    //bool winnerStage = false;
-    //bool clearingStage = false;
-    //bool pointsStage = false;
-    //bool wincheckStage = false;
-    //bool restartStage = false;
-    //bool playerWon = false;
-    //bool wasTie = false;
-    //bool wasBoosted = false;
+    bool roundOver = false;
     bool overallWinner = false;
+    ulong overallWinnerId;
     int drawCount = 0;
-    int cardsDealt = 0;
-    //int playerFireWins = 0;
-    //int playerEarthWins = 0;
-    //int playerMetalWins = 0;
-    //int playerWaterWins = 0;
-    //int playerWoodWins = 0;
-    //int oppFireWins = 0;
-    //int oppEarthWins = 0;
-    //int oppMetalWins = 0;
-    //int oppWaterWins = 0;
-    //int oppWoodWins = 0;
+    //int cardsDealt = 0;
 
     public override async void OnNetworkSpawn()
     {
@@ -69,6 +43,9 @@ public class MultiplayerSession : NetworkBehaviour
         source = GetComponent<AudioSource>();
 
         if (!IsHost) return;
+
+        Debug.Log("Creating join code text");
+        Instantiate(Resources.Load("JoinCodeText"));
 
         roundResults = new List<ulong>();
 
@@ -86,14 +63,32 @@ public class MultiplayerSession : NetworkBehaviour
 
         while (!overallWinner)
         {
+            ToggleReadyToPickClientRpc();
+            roundOver = false;
             while (!(NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerInfo>().pickedCard.Value &&
-                 NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerInfo>().pickedCard.Value) || !readyToPick)
+                 NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerInfo>().pickedCard.Value))
                 await Task.Delay(100);
             ToggleReadyToPickClientRpc();
             ResetPickedCardsClientRpc();
 
             GameLoopServerRpc();
+
+            while (!roundOver) await Task.Delay(100);
+
+            source.clip = Resources.Load<AudioClip>("Sounds/CardPass1");
+            DealClientRpc(1, true,
+                NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerInfo>().selectedCardId.Value,
+                NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerInfo>().selectedCardId.Value);
+
+            await Task.Delay(250);
+            Destroy(PlayerDeck.GetCardById(NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerInfo>().selectedCardId.Value));
+            Destroy(PlayerDeck.GetCardById(NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerInfo>().selectedCardId.Value));
+
+            CheckOverallWinnerServerRpc();
         }
+
+        EndScreenClientRpc(overallWinnerId);
+        //NetworkManager.SceneManager.LoadScene("Menu", UnityEngine.SceneManagement.LoadSceneMode.Single);
     }
 
     [ServerRpc]
@@ -118,16 +113,34 @@ public class MultiplayerSession : NetworkBehaviour
         if (roundResults[0] != roundResults[1])
         {
             // logic for if the clients disagree
-            NetworkLog.LogWarningServer("Clients disagree on winner!");
+            PlayerDeck.GetCardById(NetworkManager.ConnectedClients[0].PlayerObject
+            .GetComponent<PlayerInfo>().selectedCardId.Value).GetComponent<Animator>().SetTrigger("Fade");
+            PlayerDeck.GetCardById(NetworkManager.ConnectedClients[1].PlayerObject
+            .GetComponent<PlayerInfo>().selectedCardId.Value).GetComponent<Animator>().SetTrigger("Fade");
+            roundOver = true;
+            //NetworkLog.LogWarningServer("Clients disagree on winner!");
         }
         else
         {
             // Show results to clients
-            ulong loserId = (roundWinnerId == (ulong)0) ? 1u : 0u;
-            ulong loserCardId = NetworkManager.ConnectedClients[loserId].PlayerObject.GetComponent<PlayerInfo>()
-                .selectedCardId.Value;
-            ulong winnerCardId = NetworkManager.ConnectedClients[roundWinnerId].PlayerObject.GetComponent<PlayerInfo>()
-                .selectedCardId.Value;
+            ulong loserCardId = 0;
+            ulong winnerCardId = 0;
+            if (roundWinnerId != 3)
+            {
+                ulong loserId = (roundWinnerId == (ulong)0) ? 1u : 0u;
+                loserCardId = NetworkManager.ConnectedClients[loserId].PlayerObject.GetComponent<PlayerInfo>()
+                    .selectedCardId.Value;
+                winnerCardId = NetworkManager.ConnectedClients[roundWinnerId].PlayerObject.GetComponent<PlayerInfo>()
+                    .selectedCardId.Value;
+            }
+            else
+            {
+                loserCardId = NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerInfo>()
+                    .selectedCardId.Value;
+                winnerCardId = NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerInfo>()
+                    .selectedCardId.Value;
+            }
+
             DisplayResultsClientRpc(roundResults[0], winnerCardId, loserCardId);
         }
     }
@@ -153,7 +166,7 @@ public class MultiplayerSession : NetworkBehaviour
         Vector2 oppDestPos = GameObject.FindGameObjectWithTag("OpponentPlay").transform.position;
         StartCoroutine(MoveCard(opponentCard, oppCardPos, oppDestPos, new Vector2(0.25f, 0.25f), new Vector2(0.15f, 0.15f)));
 
-        cardsDealt -= 2;
+        //cardsDealt -= 2;
 
         StartCoroutine(FlipCards(1f, playerCard, opponentCard));
 
@@ -206,6 +219,52 @@ public class MultiplayerSession : NetworkBehaviour
         //else wasBoosted = false;
     }
 
+    [ServerRpc]
+    private void CheckOverallWinnerServerRpc()
+    {
+        PlayerInfo player1Info = NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerInfo>();
+        PlayerInfo player2Info = NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerInfo>();
+        if ((player1Info.playerEarthWins.Value >= 1 && player1Info.playerFireWins.Value >= 1 && player1Info.playerMetalWins.Value >= 1 
+            && player1Info.playerWaterWins.Value >= 1 && player1Info.playerWoodWins.Value >= 1) ||
+                player1Info.playerEarthWins.Value == 3 || player1Info.playerFireWins.Value == 3 || player1Info.playerMetalWins.Value == 3 
+                || player1Info.playerWaterWins.Value == 3 || player1Info.playerWoodWins.Value == 3)
+        {
+            print("Player Wins!");
+            overallWinnerId = 0;
+            overallWinner = true;
+        }
+        else if ((player2Info.playerEarthWins.Value >= 1 && player2Info.playerFireWins.Value >= 1 && player2Info.playerMetalWins.Value >= 1
+            && player2Info.playerWaterWins.Value >= 1 && player2Info.playerWoodWins.Value >= 1) ||
+                player2Info.playerEarthWins.Value == 3 || player2Info.playerFireWins.Value == 3 || player2Info.playerMetalWins.Value == 3
+                || player2Info.playerWaterWins.Value == 3 || player2Info.playerWoodWins.Value == 3)
+        {
+            print("Opponent Wins!");
+            overallWinnerId = 1;
+            overallWinner = true;
+        }
+    }
+
+    [ClientRpc]
+    private void EndScreenClientRpc(ulong overallWinnerId)
+    {
+        AudioClip finish = Resources.Load<AudioClip>("Sounds/WinGong");
+        GameObject.FindGameObjectWithTag("Music").GetComponent<AudioSource>().Stop();
+        source.clip = finish;
+        source.Play();
+        GameObject endScreen = GameObject.FindGameObjectWithTag("End");
+        NetworkLog.LogInfoServer("Winner id: " + overallWinnerId);
+        if (overallWinnerId == NetworkManager.LocalClientId)
+        {
+            endScreen.transform.Find("Win-Loss").GetComponent<TMPro.TextMeshPro>().text = "You Win!";
+        }
+        else
+        {
+            endScreen.transform.Find("Win-Loss").GetComponent<TMPro.TextMeshPro>().text = "You Lost...";
+        }
+        Vector3 screenPos = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, endScreen.transform.position.z);
+        endScreen.transform.position = screenPos;
+    }
+
     private IEnumerator CheckWinner(float waitTime, GameObject playerCard, GameObject opponentCard)
     {
         yield return new WaitForSeconds(waitTime);
@@ -223,7 +282,7 @@ public class MultiplayerSession : NetworkBehaviour
             //playerWon = true;
             roundWinnerId = NetworkManager.LocalClientId;
             winningType = playerInfo.type;
-            losingType = oppInfo.type;
+            //losingType = oppInfo.type;
         }
         else if (oppInfo.type == Elements.Element.FIRE && playerInfo.type == Elements.Element.METAL ||
                 oppInfo.type == Elements.Element.EARTH && playerInfo.type == Elements.Element.WATER ||
@@ -236,7 +295,7 @@ public class MultiplayerSession : NetworkBehaviour
             ulong playerId = NetworkManager.LocalClientId;
             roundWinnerId = (ulong) (playerId == (ulong)0 ? 1 : 0);
             winningType = oppInfo.type;
-            losingType = playerInfo.type;
+            //losingType = playerInfo.type;
         }
         else if (playerInfo.value > oppInfo.value)
         {
@@ -244,7 +303,7 @@ public class MultiplayerSession : NetworkBehaviour
             //playerWon = true;
             roundWinnerId = NetworkManager.LocalClientId;
             winningType = playerInfo.type;
-            losingType = oppInfo.type;
+            //losingType = oppInfo.type;
         }
         else if (oppInfo.value > playerInfo.value)
         {
@@ -253,7 +312,7 @@ public class MultiplayerSession : NetworkBehaviour
             ulong playerId = NetworkManager.LocalClientId;
             roundWinnerId = (ulong)(playerId == (ulong)0 ? 1 : 0);
             winningType = oppInfo.type;
-            losingType = playerInfo.type;
+            //losingType = playerInfo.type;
         }
         else
         {
@@ -303,11 +362,11 @@ public class MultiplayerSession : NetworkBehaviour
         }
 
         NetworkLog.LogInfoServer("Deleting winning card");
-        NetworkLog.LogInfoServer("Winning card: " + winningCard.GetComponent<CardInfo>().ToString());
+        //NetworkLog.LogInfoServer("Winning card: " + winningCard.GetComponent<CardInfo>().ToString());
         source.clip = Resources.Load<AudioClip>("Sounds/CardPass3");
         source.Play();
         winningCard.GetComponent<Animator>().CrossFade(Animator.StringToHash("Fade"), 0);
-        readyToPick = true;
+        roundOver = true;
         //winningCard.GetComponent<Animator>().SetTrigger("Fade");
     }
 
@@ -361,7 +420,7 @@ public class MultiplayerSession : NetworkBehaviour
     {
         PlayerInfo playerInfo = NetworkManager.ConnectedClients[serverParams.Receive.SenderClientId].PlayerObject
             .GetComponent<PlayerInfo>();
-        playerInfo.IncrementPlayerWins(type);
+        playerInfo.IncrementPlayerWinsServerRpc(type);
         //playerInfo.testInt.Value++;
         //NetworkLog.LogInfoServer("Current wins: " + playerInfo.testInt.Value);
         //playerInfo.playerWins[type].Value++;
@@ -416,7 +475,8 @@ public class MultiplayerSession : NetworkBehaviour
         {
             winningCard.GetComponent<Animator>().SetTrigger("Fade");
             losingCard.GetComponent<Animator>().SetTrigger("Fade");
-            // TODO: Restart to next round
+            roundOver = true;
+            return;
         }
 
         StartCoroutine(GivePoints(2f, winningCard.GetComponent<CardInfo>().type, winningCard));
@@ -457,16 +517,44 @@ public class MultiplayerSession : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void DealClientRpc()
+    private void DealClientRpc(int cardsToDraw, bool getReplacePos = false, ulong card1Id = 0, ulong card2Id = 0)
     {
-        //NetworkLog.LogInfoServer("Dealing! p1: " + player1Deck.name + ", p2: " + player2Deck.name);
-        for (int i = 0; i < 5; i++)
+        int cardPos1 = -1;
+        int cardPos2 = -1;
+
+        if (getReplacePos)
         {
-            StartCoroutine(DealPlayer(i + 1, i));
-            StartCoroutine(DealOpponent(i + 1, i));
+            cardPos1 = 0;
+            ulong playerCardId = NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerInfo>().selectedCardId.Value;
+            for (int i = 0; i < 5; i++)
+            {
+                if (playerHand[i] == PlayerDeck.GetCardById(playerCardId))
+                {
+                    cardPos1 = i;
+                }
+            }
+
+            cardPos2 = 0;
+            ulong opponentCardId = (card1Id == playerCardId) ? card2Id : card1Id;
+            for (int i = 0; i < 5; i++)
+            {
+                if (opponentHand[i] == PlayerDeck.GetCardById(opponentCardId))
+                {
+                    cardPos2 = i;
+                }
+            }
         }
 
-        NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerInfo>().SetReadyToPick(true);
+        //NetworkLog.LogInfoServer("Dealing! p1: " + player1Deck.name + ", p2: " + player2Deck.name);
+        for (int i = 0; i < cardsToDraw; i++)
+        {
+            cardPos1 = (getReplacePos) ? cardPos1 : i;
+            cardPos2 = (getReplacePos) ? cardPos2 : i;
+            StartCoroutine(DealPlayer(i + 1, cardPos1));
+            StartCoroutine(DealOpponent(i + 1, cardPos2));
+        }
+
+        //NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerInfo>().SetReadyToPick(true);
     }
 
     [ClientRpc]
@@ -482,7 +570,7 @@ public class MultiplayerSession : NetworkBehaviour
         //NetworkLog.LogInfoServer("Dealing! Sent by: " + serverParams.Receive.SenderClientId);
         SetupDecksClientRpc(new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new List<ulong> { 1 } } });
 
-        DealClientRpc();
+        DealClientRpc(5);
     }
 
     [ServerRpc]
@@ -502,7 +590,7 @@ public class MultiplayerSession : NetworkBehaviour
         Vector2 destPos = new Vector2(-3.6f + (handPos * 1.8f), -4.4f);
         player1Deck.deck[drawCount].GetComponent<Animator>().SetTrigger("Flip");
         StartCoroutine(MoveCard(player1Deck.deck[drawCount], cardPos, destPos, new Vector2(0.15f, 0.15f), new Vector2(0.25f, 0.25f), true));
-        ++cardsDealt;
+        //++cardsDealt;
     }
 
     IEnumerator DealOpponent(int waitTime, int handPos)
@@ -514,7 +602,7 @@ public class MultiplayerSession : NetworkBehaviour
         Vector2 cardPos = player2Deck.deck[drawCount].transform.position;
         Vector2 destPos = new Vector2(-3.6f + (handPos * 1.8f), 4.5f);
         StartCoroutine(MoveCard(player2Deck.deck[drawCount], cardPos, destPos, new Vector2(0.15f, 0.15f), new Vector2(0.25f, 0.25f)));
-        ++cardsDealt;
+        //++cardsDealt;
         if (drawCount == 49)
         {
             drawCount = 0;

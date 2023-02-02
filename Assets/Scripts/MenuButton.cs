@@ -2,16 +2,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-public class MenuButton : MonoBehaviour
+using Unity.Netcode;
+
+public class MenuButton : NetworkBehaviour
 {
     public GameObject[] symbols;
+    public Canvas multiplayerCanvas;
     public bool isStart;
+    public bool isMultiplayer;
     public bool isRestart;
     public bool isInstructions;
     public bool isOptions;
     public bool isCredits;
     public bool isQuit;
 
+    private Options options;
 
     private void OnMouseEnter()
     {
@@ -28,15 +33,37 @@ public class MenuButton : MonoBehaviour
         GetComponent<TMPro.TextMeshPro>().color = Color.black;
     }
 
+    [ServerRpc(RequireOwnership = false)]
+    private void RestartGameServerRpc()
+    {
+        NetworkManager.SceneManager.LoadScene("Game", LoadSceneMode.Single);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void QuitGameServerRpc()
+    {
+        NetworkManager.Shutdown();
+    }
+
     private void OnMouseDown()
     {
+        options = GameObject.FindGameObjectWithTag("Options").GetComponent<Options>();
+
         if (isStart)
         {
             SceneManager.LoadScene("Game", LoadSceneMode.Single);
         }
+        else if (isMultiplayer)
+        {
+            Vector2 newCamPos = GameObject.FindGameObjectWithTag("Multiplayer").transform.position;
+            Camera.main.transform.position = new Vector3(newCamPos.x, newCamPos.y, Camera.main.transform.position.z);
+            multiplayerCanvas.GetComponent<Canvas>().enabled = true;
+        }
         else if (isRestart)
         {
-            SceneManager.LoadScene("Game", LoadSceneMode.Single);
+            if (options.multiplayer && IsHost) NetworkManager.SceneManager.LoadScene("Game", LoadSceneMode.Single);
+            else if (options.multiplayer) RestartGameServerRpc();
+            else SceneManager.LoadScene("Game", LoadSceneMode.Single);
         }
         else if (isInstructions)
         {
@@ -55,14 +82,22 @@ public class MenuButton : MonoBehaviour
         }
         else if (isQuit)
         {
-            GameObject[] buttons = GameObject.FindGameObjectsWithTag("MenuItem");
-            foreach(GameObject button in buttons)
+            if (options.multiplayer)
             {
-                button.GetComponent<Collider2D>().enabled = false;
+                QuitGameServerRpc();
             }
-            GetComponent<AudioSource>().clip = Resources.Load<AudioClip>("Sounds/FDeath");
-            GetComponent<AudioSource>().Play();
-            GameObject.FindGameObjectWithTag("Main").GetComponent<Animator>().SetTrigger("Quit");
+            else
+            {
+                Debug.Log("Quitting!");
+                GameObject[] buttons = GameObject.FindGameObjectsWithTag("MenuItem");
+                foreach (GameObject button in buttons)
+                {
+                    button.GetComponent<Collider2D>().enabled = false;
+                }
+                GetComponent<AudioSource>().clip = Resources.Load<AudioClip>("Sounds/FDeath");
+                GetComponent<AudioSource>().Play();
+                GameObject.FindGameObjectWithTag("Main").GetComponent<Animator>().SetTrigger("Quit");
+            }
         }
     }
 }

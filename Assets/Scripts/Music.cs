@@ -17,6 +17,7 @@ public class Music : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        gameOptions = GameObject.FindGameObjectWithTag("Options").GetComponent<Options>();
         if (!gameOptions.musicOn)
         {
             source.enabled = false;

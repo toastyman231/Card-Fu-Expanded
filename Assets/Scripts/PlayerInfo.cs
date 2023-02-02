@@ -6,42 +6,33 @@ using UnityEngine.SceneManagement;
 
 public class PlayerInfo : NetworkBehaviour
 {
-    private readonly int FIRE = 0;
-
-    private readonly int EARTH = 1;
-
-    private readonly int METAL = 2;
-
-    private readonly int WATER = 3;
-
-    private readonly int WOOD = 4;
-
     public NetworkVariable<ulong> selectedCardId = 
         new NetworkVariable<ulong>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<bool> pickedCard = 
         new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     public NetworkVariable<int> playerEarthWins = 
-        new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<int> playerFireWins =
-        new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<int> playerWaterWins =
-        new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<int> playerWoodWins =
-        new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<int> playerMetalWins =
-        new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     //public NetworkVariable<int>[] playerWins = new NetworkVariable<int>[5];
     private bool readyToPick = false;
 
+    [SerializeField] private GameObject joinCodeText;
+
     public override void OnNetworkSpawn()
     {
-        //for (int i = 0; i < playerWins.Length; i++)
-        //{
-        //    playerWins[i] = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone,
-        //        NetworkVariableWritePermission.Owner);
-        //}
+        if (IsClient && !IsHost)
+        {
+            CheckIfMaxPlayersReachedServerRpc(new ServerRpcParams());
+        }
     }
 
     public override void OnNetworkDespawn()
@@ -52,6 +43,15 @@ public class PlayerInfo : NetworkBehaviour
 
         if (IsHost) NetworkManager.SceneManager.LoadScene("Menu", LoadSceneMode.Single);
         else SceneManager.LoadScene("Menu", LoadSceneMode.Single);
+    }
+
+    [ServerRpc]
+    private void CheckIfMaxPlayersReachedServerRpc(ServerRpcParams serverParams)
+    {
+        if (NetworkManager.ConnectedClientsIds.Count > 2)
+        {
+            NetworkManager.DisconnectClient(serverParams.Receive.SenderClientId);
+        }
     }
 
     public int GetWins(int type)
@@ -73,9 +73,10 @@ public class PlayerInfo : NetworkBehaviour
         }
     }
 
-    public void IncrementPlayerWins(int type)
+    [ServerRpc(RequireOwnership =false)]
+    public void IncrementPlayerWinsServerRpc(int type)
     {
-        //playerWins[type].Value++;
+        NetworkLog.LogInfoServer(IsClient.ToString());
         switch (type)
         {
             case 0:
@@ -94,17 +95,6 @@ public class PlayerInfo : NetworkBehaviour
                 playerWoodWins.Value++;
                 break;
         }
-    }
-
-    private void Update()
-    {
-        //if (Input.GetKeyDown(KeyCode.L))
-        //{
-        //    for (int i = 0; i < playerWins.Length; i++)
-        //    {
-        //        NetworkLog.LogInfoServer(playerWins[i].Value.ToString());
-        //    }
-        //}
     }
 
     public void SetReadyToPick(bool ready)

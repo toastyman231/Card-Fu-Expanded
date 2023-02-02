@@ -49,6 +49,11 @@ public class CardInfo : NetworkBehaviour
         }
     }
 
+    private void Start()
+    {
+        source = GetComponent<AudioSource>();
+    }
+
     public override string ToString()
     {
         return type + " " + value;

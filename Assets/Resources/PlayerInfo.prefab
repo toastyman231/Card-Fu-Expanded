@@ -65,9 +65,14 @@ MonoBehaviour:
     m_InternalValue: 0
   pickedCard:
     m_InternalValue: 0
-  playerWins:
-  - m_InternalValue: 0
-  - m_InternalValue: 0
-  - m_InternalValue: 0
-  - m_InternalValue: 0
-  - m_InternalValue: 0
+  playerEarthWins:
+    m_InternalValue: 0
+  playerFireWins:
+    m_InternalValue: 0
+  playerWaterWins:
+    m_InternalValue: 0
+  playerWoodWins:
+    m_InternalValue: 0
+  playerMetalWins:
+    m_InternalValue: 0
+  joinCodeText: {fileID: 8448380511125426653, guid: 0dd450e206217ee4ba2005361b55e420, type: 3}

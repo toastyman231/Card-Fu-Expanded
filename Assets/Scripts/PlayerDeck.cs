@@ -22,7 +22,7 @@ public class PlayerDeck : NetworkBehaviour
 
     public void InitializeDeck()
     {
-        NetworkLog.LogInfoServer("Initializing deck");
+        //NetworkLog.LogInfoServer("Initializing deck");
         //int slot = 0;
         for (int i = 0; i < 10; i++)
         {
@@ -45,6 +45,33 @@ public class PlayerDeck : NetworkBehaviour
             GameObject nextWoCard = Instantiate(Resources.Load("Card"), transform.position, transform.rotation) as GameObject;
             nextWoCard.GetComponent<NetworkObject>().Spawn(true);
             SetCardValuesClientRpc(i + 1, Elements.Element.WOOD);
+
+            AddCard(nextECard);
+            AddCard(nextFCard);
+            AddCard(nextMCard);
+            AddCard(nextWaCard);
+            AddCard(nextWoCard);
+        }
+    }
+
+    public void InitializeDeckSingleplayer()
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            GameObject nextECard = Instantiate(Resources.Load("Card"), transform.position, transform.rotation) as GameObject;
+            nextECard.GetComponent<CardInfo>().SetupCard(i + 1, Elements.Element.EARTH);
+
+            GameObject nextFCard = Instantiate(Resources.Load("Card"), transform.position, transform.rotation) as GameObject;
+            nextFCard.GetComponent<CardInfo>().SetupCard(i + 1, Elements.Element.FIRE);
+
+            GameObject nextMCard = Instantiate(Resources.Load("Card"), transform.position, transform.rotation) as GameObject;
+            nextMCard.GetComponent<CardInfo>().SetupCard(i + 1, Elements.Element.METAL);
+
+            GameObject nextWaCard = Instantiate(Resources.Load("Card"), transform.position, transform.rotation) as GameObject;
+            nextWaCard.GetComponent<CardInfo>().SetupCard(i + 1, Elements.Element.WATER);
+
+            GameObject nextWoCard = Instantiate(Resources.Load("Card"), transform.position, transform.rotation) as GameObject;
+            nextWoCard.GetComponent<CardInfo>().SetupCard(i + 1, Elements.Element.WOOD);
 
             AddCard(nextECard);
             AddCard(nextFCard);

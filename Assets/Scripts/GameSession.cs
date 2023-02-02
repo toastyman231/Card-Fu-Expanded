@@ -50,6 +50,9 @@ public class GameSession : NetworkBehaviour
         playerHand = new GameObject[5];
         opponentHand = new GameObject[5];
         source = GetComponent<AudioSource>();
+
+        playerDeck.InitializeDeckSingleplayer();
+        opponentDeck.InitializeDeckSingleplayer();
         
         //1) Shuffle Deck
         ShuffleDeck(ref playerDeck);
