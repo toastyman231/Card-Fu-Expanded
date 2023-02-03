@@ -36,8 +36,6 @@ public class MultiplayerSession : NetworkBehaviour
         NetworkLog.LogInfoServer("Started multiplayer!");
         player1Deck = GameObject.FindGameObjectWithTag("PlayerDraw").GetComponent<PlayerDeck>();
         player2Deck = GameObject.FindGameObjectWithTag("OpponentDraw").GetComponent<PlayerDeck>();
-        //playerDeck.Value = new NetworkDeckArray();//GameObject.FindGameObjectWithTag("PlayerDraw").GetComponent<PlayerDeck>();
-        //opponentDeck.Value = new NetworkDeckArray();//GameObject.FindGameObjectWithTag("OpponentDraw").GetComponent<PlayerDeck>();
         playerHand = new GameObject[5];
         opponentHand = new GameObject[5];
         source = GetComponent<AudioSource>();

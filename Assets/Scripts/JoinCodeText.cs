@@ -15,12 +15,4 @@ public class JoinCodeText : NetworkBehaviour
 
         joinCode.text = "Join Code: " + gameOptions.joinCode;
     }
-
-    public override void OnNetworkSpawn()
-    {
-        //base.OnNetworkSpawn();
-        //gameOptions = GameObject.FindGameObjectWithTag("Options").GetComponent<Options>();
-
-        //joinCode.text = "Join Code: " + gameOptions.joinCode;
-    }
 }
